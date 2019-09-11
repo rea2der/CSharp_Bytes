@@ -1,0 +1,1551 @@
+ReturnLastRowExcel
+==================
+Using Excel=Microsoft.Office.Interop.Excel;
+
+string filepath
+string
+
+Excel.Application xlApp ;
+Excel.Workbook xlWorkBook ;
+Excel.Worksheet xlWorkSheet ;
+Excel.Range range ;
+
+string str;
+int rCnt = 0;
+int cCnt = 0;
+
+xlApp = new Excel.ApplicationClass();
+xlWorkBook = xlApp.Workbooks.Open(filepath, 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+range = xlWorkSheet.UsedRange;
+rCnt = range.Rows.Count;
+cCnt = range.Columns.Count;
+return "L"+rCnt;
+
+==================================================================================================================
+
+ExcelToDatatable
+================
+
+DataTable Dt
+DataTable
+
+DataTable D1= new DataTable();
+if(Dt.Rows.Count>0)
+{
+int i=0;
+D1.Columns.Add("SrNo");
+D1.Columns.Add("TRN");
+D1.Columns.Add("CIDN");
+
+    foreach(DataRow Dr in Dt.Rows)
+    {
+	DataRow Dr1=D1.NewRow();
+	Dr1["SrNo"]=i.ToString();
+    	Dr1["TRN"]=Convert.ToString(Dr["TRN"]);
+	Dr1["CIDN"]=Convert.ToString(Dr["CIDN"]);
+        D1.Rows.Add(Dr1);
+	i++;
+	}
+}
+return D1;
+
+==================================================================================================================
+Get Config File Path
+====================
+
+using System.IO;
+using System.Xml;
+using System.Drawing;
+
+string configFileName
+string
+
+return Path.Combine(GetCurrentDirectory(),configFileName);
+
+
+GetCurrentDirectory
+====================
+
+string
+return Directory.GetCurrentDirectory();
+
+
+ReadConfigValue
+================
+
+string configFile, string configKey
+string
+
+
+string value = String.Empty;
+string configFilePath = configFile;
+string robotinstancefolder = System.Environment.GetEnvironmentVariable("RobotInstanceFolder");
+
+if(configFile.Contains("%ROBOTINSTANCEFOLDER%"))
+{
+  if(robotinstancefolder != null && robotinstancefolder.Length > 0)
+  {
+    configFilePath = configFile.Replace("%ROBOTINSTANCEFOLDER%",robotinstancefolder);
+  }
+}
+else if(!Path.IsPathRooted(configFile))
+ configFilePath = GetConfigFilePath(configFile);
+
+XmlDocument xmlDoc = new XmlDocument();
+
+xmlDoc.Load(configFilePath);
+
+XmlNodeList nodeList = xmlDoc.SelectNodes("/configuration/appSettings/add");
+
+foreach(XmlNode node in nodeList)
+{
+    if(node.Attributes["key"].Value.ToString() == configKey)
+    {
+        value= node.Attributes["value"].Value.ToString();
+        value=value.Replace("%ROBOTINSTANCEFOLDER%",robotinstancefolder);
+        return value;
+    }
+}
+
+return value;
+
+==================================================================================================================
+
+ZipFolder
+==========
+
+using System.IO.Compression;
+using System.IO.Compression.FileSystem;
+
+string folderpath_to_compress,string destination_full_path_with_zip_extension
+
+try
+{
+string localOutputFilesFolderPath = Path.GetDirectoryName(destination_full_path_with_zip_extension);
+
+if (!Directory.Exists(localOutputFilesFolderPath))
+Directory.CreateDirectory(localOutputFilesFolderPath);
+
+ZipFile.CreateFromDirectory(folderpath_to_compress, destination_full_path_with_zip_extension);
+}
+catch (Exception ex)
+{
+}
+
+==================================================================================================================
+Compare Values
+==============
+
+string Mtype_OpenUI, string From_Mtype_excel, string To_Mtype_excel
+string
+
+string _result=string.Empty;
+if(Mtype_OpenUI.Trim()== From_Mtype_excel.Trim())
+{
+	if(Mtype_OpenUI.Trim()== To_Mtype_excel.Trim())
+		{
+		_result="Do nothing";	
+		}
+		else
+		{
+		_result="Process Case";	
+		}
+}
+
+return _result;
+
+==================================================================================================================
+File Exist
+=========
+
+string Path
+string
+
+if(System.IO.File.Exists(Path))
+{
+return "Yes";
+}
+else
+{
+return "No";
+}
+
+Delete File
+============
+string path
+
+if(System.IO.File.Exists(path))
+{
+  Directory.Delete(path);
+}
+
+Create Directory
+================
+Using System.IO;
+
+String _Path
+
+if(!Directory.Exists(_Path))
+{
+Directory.CreateDirectory(_Path);
+}
+
+OpenFile
+=========
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+
+string
+
+OpenFileDialog ofd=new OpenFileDialog();
+ofd.ShowDialog();
+string filename=string.Empty;
+if(ofd.ShowDialog()==DialogResult.OK)
+{
+
+filename = ofd.FileName;
+}
+return filename;
+
+Copy File
+=========
+
+Using System.IO;
+
+string sourcePath, string targetPath
+string
+
+string []arr=sourcePath.Split('\\');
+string InputF= targetPath+arr[arr.Length-1];
+
+if(File.Exists(sourcePath))
+{
+if(!Directory.Exists(targetPath))
+{
+Directory.CreateDirectory(targetPath);
+}
+System.IO.File.Copy(sourcePath, InputF, true); 
+}
+return InputF;
+
+==================================================================================================================
+Stringconcat
+============
+
+string cn,string st_name,string st_num,string c_Add,string state,string postcode
+string
+
+string _strnewval="";
+if(cn=="")
+{
+_strnewval=cn+"\r\n"+st_num+" "+st_name+"\r\n"+c_Add+" "+state+" "+postcode+"\r\n";
+return _strnewval;
+}
+return _strnewval;
+
+==================================================================================================================
+Replace_string
+==============
+
+string str
+string
+
+
+string strnew=str;
+strnew=str.Replace("/",".").Trim();
+return strnew;
+
+==================================================================================================================
+
+Excel Using OLEDB
+=================
+using System.IO;
+using System.Data;
+using System.Data.OleDb;
+
+
+ReadXLORCSV
+string theFile
+DataTable
+
+
+string filename =theFile; 
+FileInfo fileInfo = new FileInfo(filename); 
+string directoryFullPath = fileInfo.DirectoryName;
+
+if(fileInfo.Name.Contains("csv"))
+{
+
+string sqlString = "Select * FROM [" + fileInfo.Name+ "];";
+string conStr = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + directoryFullPath + ";" + "Extended Properties='text;HDR=NO;IMEX=1;'"; 
+DataTable theCSV = new DataTable();
+
+using (OleDbConnection conn = new OleDbConnection(conStr)) 
+{
+   using (OleDbCommand comm = new OleDbCommand(sqlString, conn)) 
+   { 
+     using (OleDbDataAdapter adapter = new OleDbDataAdapter(comm)) 
+      { 
+        adapter.Fill(theCSV); 
+      }
+   }
+}
+return theCSV;
+}
+
+else
+{
+  using (OleDbConnection conn = new OleDbConnection())
+  { 
+
+   DataTable dt = new DataTable();
+   conn.ConnectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filename+ ";" + "Extended Properties='Excel 12.0;HDR=NO;IMEX=1;'"; 
+   	using (OleDbCommand comm = new OleDbCommand()) 
+   	{ 
+     		comm.CommandText = "Select * from [Sheet1"+"$]";
+     		comm.Connection = conn; 
+     		using (OleDbDataAdapter da = new OleDbDataAdapter()) 
+     		{ 
+      		da.SelectCommand = comm; 
+      		da.Fill(dt);
+      		return dt; 
+     		} 
+   	}
+  }
+
+} 
+
+======================================================================================================================
+
+Save As UI Automation
+=====================
+OpenSpan.Automation.dll
+OpenSpan.dll
+UIAutomationClient Version 4.0
+UIAutomationTypes  Version 4.0
+
+
+Choose 
+======
+
+using System.Windows.Automation; 
+using OpenSpan.Diagnostics;
+
+OpenSpan.Adapters.Controls.Control control, int pauseDuration, string choice, out string message
+bool
+
+
+Diagnostic.TraceVerbose("Script", string.Format("Choose script running, Choice: {0}", choice)); 
+switch (choice) 
+{ 
+case "Open": 
+return ClickButton(control, pauseDuration, "Open", out message); 
+case "Save": 
+return ClickButton(control, pauseDuration, "Save", out message); 
+case "Save As": 
+return DownloadSaveAs(control, pauseDuration, out message); 
+case "Show all content": 
+return ClickButton(control, pauseDuration, "Show all content", out message); 
+case "Allow blocked content": 
+return ClickButton(control, pauseDuration, "Allow blocked content", out message); 
+} 
+message = "invalid option"; 
+Diagnostic.TraceVerbose("Script", string.Format("Choose script complete, Message: {0}, Result: FALSE", message)); 
+return false;
+
+
+ClickButton
+===========
+
+OpenSpan.Adapters.Controls.Control control, int pauseDuration, string text, out string message
+bool
+
+Diagnostic.TraceVerbose("Script", string.Format("ClickButton script running, Text: {0}", text)); 
+bool result = false; 
+message = ""; 
+try 
+{ 
+IntPtr handle = GetWindowHandle(control); 
+MessageBox.Show(handle.ToString());
+if(handle != IntPtr.Zero) 
+{ 
+	System.Windows.Automation.AutomationElement aeDownloadToolBar = System.Windows.Automation.AutomationElement.FromHandle(handle); 
+
+	if(aeDownloadToolBar != null) 
+	{
+	
+
+	System.Windows.Automation.AutomationElement aeButton = aeDownloadToolBar.FindFirst(System.Windows.Automation.TreeScope.Children, new 	System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.NameProperty, text)); 
+	System.Windows.Automation.InvokePattern ipClickButton1 = (System.Windows.Automation.InvokePattern) aeButton.GetCurrentPattern	(System.Windows.Automation.InvokePattern.Pattern); 
+	System.Threading.Thread.Sleep(pauseDuration); 
+	ipClickButton1.Invoke(); 
+	result = true; 
+	}
+	else
+	{ 
+	MessageBox.Show("null toolbar");
+	message = "null toolbar"; 
+	} 
+}
+else 
+{ 
+message = "Zero Ptr"; 
+}
+ 
+} 
+catch(Exception e) 
+{ 
+OpenSpan.Diagnostics.Diagnostic.PublishException(e,null); 
+message = e.Message; 
+} 
+return result;
+
+
+DownloadSaveAs
+==============
+
+OpenSpan.Adapters.Controls.Control control, int pauseDuration, out string message
+bool
+
+
+Diagnostic.TraceVerbose("Script", "DownloadSaveAs script running"); 
+message = ""; 
+bool result = false; 
+try 
+{ 
+IntPtr handle = GetWindowHandle(control); 
+if(handle != IntPtr.Zero) 
+{ 
+AutomationElement aeDownloadToolBar = AutomationElement.FromHandle(handle); 
+
+AutomationElement rootElement = AutomationElement.RootElement; 
+if (aeDownloadToolBar != null) 
+{ 
+AutomationElement splitButton = aeDownloadToolBar.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.NameProperty, "")); 
+
+InvokePattern ipClickButton1 = (InvokePattern)splitButton.GetCurrentPattern(InvokePattern.Pattern); 
+System.Threading.Thread.Sleep(pauseDuration); 
+ipClickButton1.Invoke(); 
+System.Threading.Thread.Sleep(pauseDuration); 
+
+result = true; 
+} 
+} 
+} 
+catch (Exception ex) 
+{ 
+Diagnostic.PublishException(ex, null); 
+message = ex.Message; 
+} 
+return result;
+
+
+GetWindowHandle
+===============
+
+OpenSpan.Adapters.Controls.Control control1
+IntPtr
+
+OpenSpan.Adapters.Windows.Window targetWindow = control1.Target as OpenSpan.Adapters.Windows.Window; 
+if(targetWindow != null) 
+{ 
+return targetWindow.Handle; 
+} 
+return IntPtr.Zero;
+
+
+Save
+====
+OpenSpan.Adapters.Controls.Control control
+
+IntPtr handle = GetWindowHandle(control);
+if(handle != IntPtr.Zero)
+{
+
+AutomationElementCollection ParentElements = AutomationElement.FromHandle(handle).FindAll(TreeScope.Children, Condition.TrueCondition);
+
+foreach (AutomationElement ParentElement in ParentElements)
+{
+
+
+var childElements = ParentElement.FindAll(TreeScope.Children, Condition.TrueCondition);
+foreach (AutomationElement childElement in childElements)
+{
+
+	if (childElement.Current.Name == "Save")
+	{
+
+	var invokePattern = childElement.GetCurrentPattern(InvokePattern.Pattern) as InvokePattern;
+	invokePattern.Invoke();
+	System.Threading.Thread.Sleep(3000); 
+	break;
+
+	}
+
+}
+
+}
+}
+
+
+======================================================================================================================
+
+SQL Query
+=========
+
+Connection String
+-----------------
+Provider=SQLOLEDB.1;Password=**;Persist Security Info=True;User ID=**;Initial Catalog=**;Data Source=ipaddress
+Provider=SQLOLEDB.1;Password=**;Persist Security Info=True;User ID=**;Initial Catalog=**;Data Source=ipaddress
+
+CommandText
+-----------
+SELECT TOP 1000 [logDateTime],[logTypeId],[robotInstanceId],[activityId] FROM [dbo].[RobotLog_Dev] where activityid = @activityid
+
+======================================================================================================================
+
+GetJSONField
+============
+
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.IO.Compression;
+
+GetJSONField
+string json, string fieldName
+string
+
+
+string[] fields = json.Split(new string[] { "\",\"" }, StringSplitOptions.None);
+string key = "\"" + fieldName + "\":\"";
+int pos = json.IndexOf(key);
+if(pos > 0)
+{
+  int pos2 = json.IndexOf("\"",pos + key.Length);
+  if(pos2 > 0)
+    return json.Substring(pos+key.Length,pos2-pos-key.Length);
+}
+return string.Empty;
+
+
+
+========================================================================================
+Send Web request
+================
+
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.IO.Compression;
+
+SendWebRequest
+string url
+string
+
+
+WebRequest request = WebRequest.Create(url);
+request.ContentType = "application/json";
+request.Method = "GET";
+            
+using(WebResponse response = request.GetResponse())
+{
+  if (response != null)
+  {
+    Stream responseStream = response.GetResponseStream();
+    StreamReader sr = new StreamReader(responseStream);
+    string json = sr.ReadToEnd();
+    return json;
+  }
+}
+return string.Empty;
+
+=============================================================================================
+
+Save Credentials Manager
+=======================
+
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.IO.Compression;
+
+SaveCredInCredentialManager
+string targetUrl, string userId, string password
+bool
+
+string hostName = targetUrl;
+
+int pos = hostName.IndexOf("://");
+if(pos >= 0)
+  hostName = hostName.Substring(pos+3);
+
+int pos2 = hostName.IndexOf("/");
+if(pos2 > 0)
+  hostName = hostName.Substring(0,pos2);
+
+string arguments = "/add:" + hostName + " /user:" + userId + " /pass:" + password; 
+
+Process p = new Process();
+p.StartInfo.UseShellExecute = false;
+p.StartInfo.FileName = "cmdkey.exe";
+p.StartInfo.Arguments = arguments;
+p.Start();
+p.WaitForExit();
+
+Thread.Sleep(3000);
+
+return true;
+
+=============================================================================================
+
+Update Item SQL
+================
+
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.IO.Compression;
+
+UpdateActivityItem
+string connectionString, string activityId, string itemId, int statusId, int logTypeId, string message
+void
+
+
+SqlConnection sqlConn = new SqlConnection(connectionString);
+
+SqlCommand sqlCmd = new SqlCommand("UpdateActivityItem", sqlConn);
+sqlCmd.CommandType = CommandType.StoredProcedure;
+
+SqlParameter param = new SqlParameter("@ActivityId", SqlDbType.VarChar);
+param.Direction = ParameterDirection.Input;
+param.Value = activityId;
+sqlCmd.Parameters.Add(param);
+
+param = new SqlParameter("@ItemId", SqlDbType.VarChar);
+param.Direction = ParameterDirection.Input;
+param.Value = itemId;
+sqlCmd.Parameters.Add(param);
+
+
+sqlConn.Open();
+
+sqlCmd.ExecuteScalar();
+
+sqlConn.Close();
+
+
+InsertActivityItem
+===================
+
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.IO.Compression;
+
+InsertActivityItem
+string connectionString, string activityId, string itemId
+void
+
+
+SqlConnection sqlConn = new SqlConnection(connectionString);
+
+SqlCommand sqlCmd = new SqlCommand("InsertActivityItem", sqlConn);
+sqlCmd.CommandType = CommandType.StoredProcedure;
+
+SqlParameter param = new SqlParameter("@ActivityId", SqlDbType.VarChar);
+param.Direction = ParameterDirection.Input;
+param.Value = activityId;
+sqlCmd.Parameters.Add(param);
+
+param = new SqlParameter("@ItemId", SqlDbType.VarChar);
+param.Direction = ParameterDirection.Input;
+param.Value = itemId;
+sqlCmd.Parameters.Add(param);
+
+sqlConn.Open();
+
+sqlCmd.ExecuteScalar();
+
+sqlConn.Close();
+
+=============================================================================================
+ConvertToDate
+=============
+
+Using System.Globalization;
+
+convertToDateTime1
+string date1
+DateTime
+
+DateTime date = DateTime.ParseExact(date1,"d/M/yyyy",CultureInfo.InvariantCulture);
+return date;
+
+=============================================================================================
+CheckForDigitsOnly
+==================
+
+string number = a;
+
+foreach (char c in number)
+{
+MessageBox.Show(c.ToString());
+if (c < '0' || c > '9')
+{
+return false;
+}
+}
+return true;
+
+=============================================================================================
+
+StringBuilder
+=============
+
+Using System.Text;
+Using System.IO;
+
+DataTable dt,string dirPath
+string
+
+
+StringBuilder sb = new StringBuilder();
+DateTime date = DateTime.Now;
+string dateNew = date.ToString("ddMMyyyyhhmmss");
+string localOutputFullPath = String.Empty;
+sb.Append("Ref Number|Payer name|Customer Reference Number|Amount|Date of Payment|Reason For Investigation|Biller Code|TRN|BillingSystem|BotRemarks"+Environment.NewLine);
+
+foreach(DataRow dr in dt.Rows)
+{
+sb.Append(dr["RefNo"].ToString()+"|" + dr["PayerName"].ToString()+"|" + dr["CustomerRefNo"].ToString()+"|" + dr["Amount"].ToString()+"|" + dr["DateOfPayment"].ToString()+ "|"+dr["Reason"].ToString()+ "|"+dr["BillerCode"].ToString()+"|"+ dr["TRN"].ToString()+ "|"+dr["BillingSystem"].ToString()+ "|"+dr["BotRemarks"].ToString()+Environment.NewLine);
+}
+
+
+string fileName = "Output"+dateNew+".csv";
+localOutputFullPath = Path.Combine(dirPath, fileName);
+File.WriteAllText(localOutputFullPath ,sb.ToString());
+
+return localOutputFullPath;
+
+=========================================================================================================
+
+Script Siebel
+=============
+
+var target = document.getElementsByName('id');target=target[0];target.value='Selection';var eventObject = document.createEvent("Event");eventObject.initEvent('focus', true, false);target.dispatchEvent(eventObject);var eventObject2 = document.createEvent("Event");eventObject2.initEvent('keydown', true, false);target.dispatchEvent(eventObject2);var eventObject3 = document.createEvent("Event");eventObject3.initEvent('blur', true, false);target.dispatchEvent(eventObject3);
+
+
+Area
+$("input[aria-label='Area']").parent().find("span[class='siebui-icon-dropdown applet-form-combo applet-list-combo']").click()
+
+Sub Area 
+$("input[aria-label='Sub-Area']").parent().find("span[class='siebui-icon-dropdown applet-form-combo applet-list-combo']").click()
+
+Type 
+$("input[aria-label='Type']").parent().find("span[class='siebui-icon-dropdown applet-form-combo applet-list-combo']").click()
+
+Media Type 
+$("input[aria-label='Media Type']").parent().find("span[class='siebui-icon-dropdown applet-form-combo applet-list-combo']").click()
+
+
+Comments
+$(".siebui-applet-title:contains('Interaction Detail')").parents(".NotSelected").find("textarea[aria-labelledby='Comments_Label']").dblclick()
+$(".ui-dialog-title:contains('Comments')").parents("div[role='dialog']").find("textarea[id='txtareaedit_txt']").val("murali")
+$(".ui-dialog-title:contains('Comments')").parents("div[role='dialog']").find("button:contains('Save')").click()
+
+Completed Flag
+$("input[aria-label='Completed Flag']").Click()
+
+SendMail – Template Selection
+$("input[aria-label='Template Name']").parent().find("span[aria-label='Selection Field']").click()
+$("select[name='S_A2_tgs']").val('1').trigger('change');
+
+
+$("input[aria-label='Employee Id']").val("48370019")
+$("input[aria-label='Concession Authority']").val("Telstra")
+
+$("a:Contains('Concession')").click()
+$("a:Contains('SR 1-1337493529730')").click()
+
+To get site map
+$("div[name='_sweclient']").find("img[src='images/web-icon.gif']")
+
+To get the span for locality
+$("input[aria-labelledby='Locality_Label']").parent(".mceGridField.siebui-value.mceField").find("span[id*='_icon']")
+
+$("table[Summary='Pick ADBoR Address']").find("td[id*='Address_Status']").text()
+
+$("select[name='s_vis_div']").val('Profile').trigger('change');
+$("select[name='s_vis_div']").trigger('click');
+
+$("button[aria-label='Billing Account:Menu'][class='siebui-appletmenu-btn siebui-ctrl-btn appletButton']").click();
+$("li[data-caption*='Save Record'][class='siebui-appletmenu-item  ui-menu-item']").click();
+
+$("#control id").val('the value of the option');
+
+=========================================================================================================
+
+Kill Excel
+==========
+
+System.Diagnostics.Process[] procs = System.Diagnostics.Process.GetProcessesByName("EXCEL.EXE");
+string CurrentUser = Environment.UserName;
+
+System.Diagnostics.Process currProcess = System.Diagnostics.Process.GetCurrentProcess();
+foreach(System.Diagnostics.Process proc  in procs)
+{
+              var ProcessUserSID = proc.StartInfo.EnvironmentVariables;
+              Boolean flag = ProcessUserSID.ContainsKey("USERNAME");
+              if (flag == true)
+              {
+                    if (proc.SessionId == currProcess.SessionId)
+                    {
+                        proc.Kill();
+                    }
+              }  
+}
+
+
+KILL IE
+=======
+
+bool
+try
+{
+String ex;
+Process[] excelProcs = Process.GetProcessesByName("iexplore");
+Process currentProcess = Process.GetCurrentProcess();
+foreach (Process proc in excelProcs)
+{
+if (proc.SessionId == currentProcess.SessionId)
+proc.Kill();
+}
+ return true;
+}
+catch (Exception ex)
+{
+return false;
+}
+=========================================================================================================
+OpenSpan.Adapters.Controls
+==========================
+	OpenSpan.Adapters.Controls.Control
+	OpenSpan.Adapters.Controls.ComboBox
+	OpenSpan.Adapters.Controls.Button
+
+OpenSpan.Adapters.Siebel
+========================
+	OpenSpan.Adapters.Siebel.SiebelOpenUI
+
+OpenSpan.Adapters.Web
+=====================
+	OpenSpan.Adapters.Web.WebAdapter
+	OpenSpan.Adapters.Web.HtmlTableElement
+	OpenSpan.Adapters.Web.HtmlDocument
+	OpenSpan.Adapters.Web.Controls.Table
+	OpenSpan.Adapters.Web.HtmlInputPasswordElement
+	OpenSpan.Adapters.Web.Controls.TextBox
+
+OpenSpan.Adapters.Windows
+=========================
+	OpenSpan.Adapters.Windows.WindowsModule
+	
+
+OpenSpan.Adapters.WinInet
+=========================
+	OpenSpan.Adapters.WinInet.WinInetFactory
+
+=========================================================================================================
+
+GridColor
+=========
+
+System.Drawing;
+
+DataGridView Grd
+
+foreach(DataGridViewRow r1 in Grd.Rows)
+{
+ r1.DefaultCellStyle.BackColor = Color.Cyan;
+ r1.DefaultCellStyle.ForeColor = Color.Black;
+ break;
+}
+
+Grd.Columns["Product"].DefaultCellStyle.BackColor = Color.Linen;
+Grd.Columns["Product"].DefaultCellStyle.ForeColor = Color.Black;
+
+foreach (DataGridViewColumn column in Grd.Columns)
+{
+    column.SortMode = DataGridViewColumnSortMode.NotSortable;
+}
+
+
+Selectedchechkbox_GRID
+======================
+
+DataGridView grd
+
+bool a1;
+foreach(DataGridViewRow row in grd.Rows)
+{ 
+  a1=Convert.ToBoolean(row.Cells[0].Value);
+	if(a1==true)
+	{	
+	 row.Cells[0].Value=false;
+	}
+	
+}
+=========================================================================================================
+ExtractValue_FORM
+=================
+
+using System.Collections.Generic;
+
+
+Form frm
+List<string>
+
+List<string> ControlList = new List<string>();
+getId(frm,ControlList);
+return ControlList;
+
+
+getId
+=====
+
+Control control,List<string> ControlList
+
+foreach (Control c in control.Controls)
+{
+getId(c,ControlList);
+if ((c is TextBox) || (c is RichTextBox) || (c is ComboBox))
+{
+if(!(c.Name=="txt_UI_SRNo"))
+ControlList.Add(c.Name);
+}
+}
+
+
+
+ClearAll_FormValues
+==================
+Form fm,List<string> ControlList
+
+for(int i=0;i<ControlList.Count;i++)
+{
+fm.Controls.Find(ControlList[i],true)[0].Text=null;
+}
+=========================================================================================================
+
+GetHTMLName
+===========
+string strOuterHtml
+string
+
+string strName = String.Empty;
+
+strOuterHtml= strOuterHtml.Replace('"','\'');
+string[] arr1 = strOuterHtml.Split(' ');
+ 
+       for(int i=0;i<=arr1.Length;i++)
+       {
+         if(arr1[i].Contains("name="))
+         {
+        strName = arr1[i].Replace("name='","");
+       strName  = strName.Replace("'","");
+break;
+
+         }
+
+         }
+return strName;
+=========================================================================================================
+
+SendMail
+========
+Using System.Net.Mail;
+
+string Attachment1,string Attachment2,string Attachment3,string message,string subject,string toName,string fromName,string ccName
+
+
+SmtpClient smtpClient = new SmtpClient("**");
+smtpClient .UseDefaultCredentials = true;
+smtpClient .EnableSsl = false;
+MailMessage e_mail = new MailMessage();
+e_mail = new MailMessage();
+e_mail.From = new MailAddress(fromName);
+if(toName.Contains(","))
+{
+string []arrmailto= toName.Split(',');
+foreach(string s in arrmailto)
+{
+e_mail.To.Add(new MailAddress(s));
+}
+}
+else
+{
+e_mail.To.Add(new MailAddress(toName));
+}
+if(ccName.Contains(","))
+{
+string []arrmailcc= ccName.Split(',');
+foreach(string s1 in arrmailcc)
+{
+e_mail.CC.Add(s1);
+}
+}
+else
+{
+e_mail.CC.Add(ccName);
+}
+e_mail.Subject = subject;
+e_mail.IsBodyHtml = true;
+if(!string.IsNullOrEmpty(Attachment1))
+{
+Attachment attachment1 = new Attachment(Attachment1);
+e_mail.Attachments.Add(attachment1);
+}
+if(!string.IsNullOrEmpty(Attachment2))
+{
+Attachment attachment2 = new Attachment(Attachment2);
+e_mail.Attachments.Add(attachment2);
+}
+if(!string.IsNullOrEmpty(Attachment3))
+{
+Attachment attachment3 = new Attachment(Attachment3);
+e_mail.Attachments.Add(attachment3);
+}
+e_mail.Body = message;
+smtpClient.Send(e_mail);
+
+=========================================================================================================
+SuppressErrors
+==============
+
+OpenSpan.Automation
+OpenSpan.Design
+
+
+using System;
+using System.Collections;
+
+OpenSpan.Automation.Automator automation, bool Suppress
+
+OpenSpan.Automation.IRuntimeHost osruntimehost;
+if (automation.Site != null)
+{
+osruntimehost = automation.Site.GetService(typeof(OpenSpan.Automation.IRuntimeHost)) as OpenSpan.Automation.IRuntimeHost;
+if(osruntimehost != null)
+{
+System.Collections.IEnumerable lstdesncomps = osruntimehost.GetDesignComponents();
+foreach (OpenSpan.Design.IDesignComponent desncomp in lstdesncomps)
+{
+bool autoobj = (desncomp is OpenSpan.Automation.Automator);
+if (autoobj == true)
+{
+OpenSpan.Automation.Automator autx = (OpenSpan.Automation.Automator)desncomp;
+autx.SuppressErrors = Suppress;
+}
+}
+}
+}
+
+=========================================================================================================
+WriteToNotepad
+==============
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+
+string filepath, string uname, string pwd
+
+if (File.Exists(filepath))
+    {
+        File.Delete(filepath);
+    }
+
+TextWriter tw = File.CreateText(filepath);
+tw.WriteLine(uname +","+ pwd);
+tw.Close();
+=========================================================================================================
+
+Outlook_Read_Body_Subject_Text
+==============================
+
+using Microsoft.Office.Interop.Outlook;
+
+string filepath,string parameter
+string
+
+try
+{
+Microsoft.Office.Interop.Outlook.Application outlook = new Microsoft.Office.Interop.Outlook.Application();
+MailItem item = (MailItem)outlook.CreateItemFromTemplate(filepath,Type.Missing);
+if(parameter.Contains("Body"))
+{
+   string bmsg = string.Format(item.Body);
+   return bmsg;
+}
+else if(parameter.Contains("Subject"))
+{
+   string smsg = string.Format(item.Subject);
+   return smsg;
+}
+else
+{
+  return "NA";
+}
+
+}
+catch(System.Exception e)
+{
+//MessageBox.Show(e.Message);
+return null;
+}
+=========================================================================================================
+
+InsertIntoWordTemplate
+======================
+
+using Microsoft.Office.Interop.Word ;
+using System.collections.Specialized;
+
+string WordTemplatePath,System.Data.DataTable InternalDt, System.Data.DataTable externalDt,string filename_full_path,string zipfile,string result_doc
+
+
+try
+{
+object missing = System.Reflection.Missing.Value;
+object setFalse = false;
+object savechanges = true;
+
+Microsoft.Office.Interop.Word.Application wordApp = new Microsoft.Office.Interop.Word.Application();
+object fileName = filename_full_path;
+Microsoft.Office.Interop.Word.Document aDoc = null;
+
+if (File.Exists((string)fileName))
+{
+	object readOnly = false;
+	object isVisible = false;
+	wordApp.Visible = false;
+
+	aDoc = wordApp.Documents.Open(ref fileName, ref missing, ref readOnly, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref isVisible, ref missing, ref missing, ref missing, ref missing);
+
+	aDoc.Activate();
+
+	Microsoft.Office.Interop.Word.Tables tables = aDoc.Tables;
+
+	if (tables.Count > 0)
+	{
+	Microsoft.Office.Interop.Word.Table table = tables[1];
+	int rowsCount = table.Rows.Count;
+	int coulmnsCount = table.Columns.Count;
+
+		for (int i = 0; i < externalDt.Rows.Count; i++)
+		{
+			Microsoft.Office.Interop.Word.Row row = table.Rows.Add(ref missing);
+			for (int j = 1; j < coulmnsCount + 1; j++)
+			{
+				//MessageBox.Show(dt.Rows[i][j].ToString());
+				//row.Cells[j].Range.Text = string.Format("{0}{1}", i, j);
+				row.Cells[j].Range.Text = externalDt.Rows[i][j - 1].ToString();
+				row.Cells[j].WordWrap = true;
+				//row.Cells[j].Range.Underline = WdUnderline.wdUnderlineNone;
+				row.Cells[j].Range.Bold = 0;
+			}
+		}
+
+		// Second Table
+		Microsoft.Office.Interop.Word.Table WInternalTable = tables[2];
+		int IcoulmnsCount = WInternalTable.Columns.Count;
+		for (int m = 0; m < InternalDt.Rows.Count; m++)
+		{
+			Microsoft.Office.Interop.Word.Row row1 = WInternalTable.Rows.Add(ref missing);
+			for (int n = 1; n < IcoulmnsCount + 1; n++)
+			{
+				//MessageBox.Show(dt.Rows[i][j].ToString());
+				//row1.Cells[n].Range.Text = string.Format("{0}{1}", i, j);
+				row1.Cells[n].Range.Text = InternalDt.Rows[m][n - 1].ToString();
+				row1.Cells[n].WordWrap = true;
+				//row1.Cells[n].Range.Underline = WdUnderline.wdUnderlineNone;
+				row1.Cells[n].Range.Bold = 0;
+			}
+		}
+
+	}
+	
+	if (aDoc.Bookmarks.Exists("BAttachment"))
+	{
+		string FName = zipfile;
+
+		object bkmn = "BAttachment";
+		Microsoft.Office.Interop.Word.Range r = aDoc.Bookmarks.get_Item(ref bkmn).Range;
+		// r.InsertFile(FName, ref missing, ref missing, true);
+		//aDoc.Bookmarks.get_Item("BAttachment").Range.InsertFile(FName,ref missing,ref missing, ref missing);
+		
+		StringCollection collection = new StringCollection();
+		collection.Add(FName);
+		Clipboard.SetFileDropList(collection);
+		r.Paste();
+	}
+
+//object sFile = @"D:\Users\d851306\Desktop\EDMS_result.docx";
+object sFile = result_doc;
+aDoc.SaveAs(ref sFile, ref missing, ref missing,
+ref missing, ref missing, ref missing,
+ref missing, ref missing, ref missing,
+ref missing, ref missing, ref missing,
+ref missing, ref missing, ref missing,
+ref missing);
+aDoc.Close(ref savechanges, ref missing, ref missing);
+wordApp.Quit(ref savechanges, ref missing, ref missing);
+
+}
+}
+catch(Exception ex)
+{
+//MessageBox.Show(ex.ToString());
+}
+=========================================================================================================
+
+ReadWordDocument
+================
+
+using System.Text;
+
+string filepath
+string
+
+StringBuilder text = new StringBuilder();
+Microsoft.Office.Interop.Word.Application word = new Microsoft.Office.Interop.Word.Application();
+object miss = System.Reflection.Missing.Value;
+object path = filepath;
+object readOnly = true;
+Microsoft.Office.Interop.Word.Document docs = word.Documents.Open(ref path, ref miss, ref readOnly, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss, ref miss);
+
+for (int i = 0; i < docs.Paragraphs.Count; i++)
+{
+text.Append(" \r\n " + docs.Paragraphs[i + 1].Range.Text.ToString());
+}
+            
+docs.Close(ref miss,ref miss, ref miss);
+return text.ToString();
+
+=========================================================================================================
+ExtractSpecificString
+=====================
+Using System;
+
+string body,string startstring,string endstring
+string
+
+try
+{
+body=body.Replace(" ","");
+
+int startIndex=body.IndexOf(startstring)+startstring.Length;
+int endIndex=body.IndexOf(endstring);
+int length=endIndex-startIndex;
+
+string detail=body.Substring(startIndex,length);
+
+return detail;
+}
+catch(System.Exception e)
+{
+return null;
+}
+=========================================================================================================
+Read CSV
+========
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+
+Parameters: string strFilePath
+Return Type: DataTable
+
+
+       System.IO.StreamReader sr = new StreamReader(strFilePath);
+       string[] headers = sr.ReadLine().Split(',');
+        DataTable dt = new DataTable();
+            foreach (string header in headers)
+            {
+                dt.Columns.Add(header);
+            }
+            
+while (!sr.EndOfStream)
+            {
+                string[] rows = Regex.Split(sr.ReadLine(), ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                DataRow dr = dt.NewRow();
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    dr[i] = rows[i];
+                }
+                dt.Rows.Add(dr);
+            }
+return dt;
+=========================================================================================================
+Filter Data Row - Sample
+=======================
+
+Filtering Data Table
+====================
+
+NewDataTable
+DataTable
+
+DataTable dt = new DataTable();
+return dt;
+
+--------------------------------------------
+DataRow[] dr
+DataTable
+
+DataTable dt = new DataTable();
+dt.Columns.Add("Sno");
+dt.Columns.Add("Name");
+dt.Columns.Add("Mobileno");
+DataRow row = dt.NewRow();
+row = dr[0];
+dt.ImportRow(row);
+return dt;
+
+=========================================================================================================
+
+Read String based on word and split it
+=======================================
+	    
+            string[] s_array = new string[0];        
+            string test = "QGNQNE003610101 QGNGNE003810101 QGNGNE003910101 10101214 10212541 103254584";
+            
+            foreach (string word in test.Split(' '))
+            {
+                if (word.Substring(0,1) == "Q")
+                {
+                    Array.Resize(ref s_array, s_array.Length + 1);
+                    s_array[s_array.Length - 1] = word;
+                }
+            }
+
+            foreach (string b in s_array)
+            {
+                Console.WriteLine(b.Substring(5, b.Length - 5));
+            }
+
+=========================================================================================================
+
+Start Process
+=============
+
+ string ex1 = @"D:\PILLAR.msg";
+                string ex2 = @"Body";
+
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+
+                startInfo.FileName = @"D:\NRF.exe";
+
+                startInfo.Arguments = ex1 + " " + ex2;
+                Process.Start(startInfo);
+
+=========================================================================================================
+
+Append text to text file
+========================
+
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),  "kumar.txt");
+            string text = "test\n value\n4 ******* FINDING CNIS ( WITH FNN / DA / ESA )";
+
+            if (File.Exists(path))
+            {
+                string createText = text + Environment.NewLine;
+                File.AppendAllText(path, createText);
+            }
+            else
+            {
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine(text + Environment.NewLine);
+                }
+            }
+
+=========================================================================================================
+Oracle Query
+============
+
+string oradb = "Data Source=**;UserId=**;Password=**;";
+            OracleConnection conn = new OracleConnection(oradb);
+            conn.Open();
+            OracleCommand cmd = new OracleCommand();
+            cmd.CommandText = "select * from MM_TOSCA_DATA_APPN.TOSCA_MM_EP_ORDERS_DTLS ";
+
+            cmd.Connection = conn;
+            DataTable dt = new DataTable();
+            OracleDataReader reader = cmd.ExecuteReader();
+            dt.Load(reader);
+	    return dt;
+
+---------------------------------------------
+
+string s_id = serviceid;
+string order_status=orderstatus;
+string cust_addr=custaddr;
+string new_assert_value=assertvalue;
+string c_addr=custaddr;
+string address_id=addressid;
+string customer_dob=customerdob;
+string customer_buslast_name=customerlname; 
+int event_id=EVENT_ID;
+string order_number=ORDER_NUMBER;
+string mstat=mica_status;
+string micatype=mica_type;
+
+
+cmd.ExecuteNonQuery();
+conn.Close();
+
+=========================================================================================================
+GetMsgFilePath
+==============
+using System;
+using System.IO;
+
+string subfolderpath
+string[]
+
+string[] msgfiles = new string[Directory.GetFiles(subfolderpath,"*.txt",SearchOption.TopDirectoryOnly).Length];
+msgfiles = Directory.GetFiles(subfolderpath,"*.txt", SearchOption.TopDirectoryOnly);                
+return msgfiles;
+
+GetSubFolderPath
+================
+
+string ipfolderpath
+string[]
+
+string[] subfolders = new string[Directory.GetDirectories(ipfolderpath).Length];
+subfolders = Directory.GetDirectories(ipfolderpath);
+return subfolders;
+
+=========================================================================================================
+
+Get Dynamic Process Path
+=========================
+
+try
+{
+string path=null;
+string a=Environment.GetFolderPath(Environment.SpecialFolder.Desktop)+ @"\VH Log.appref-ms";
+
+Process whatever = Process.Start(a);
+System.Threading.Thread.Sleep(2000);
+
+
+String[] properties = { "Name", "ExecutablePath" };
+SelectQuery s = new SelectQuery("Win32_Process","Name = 'Volume_Hold_Log_WindowsApplication.exe' ",properties);
+
+ManagementObjectSearcher searcher =new ManagementObjectSearcher(s);
+
+foreach (ManagementObject o in searcher.Get())
+{
+	path=o["ExecutablePath"].ToString();
+           
+}
+           
+
+Process[] remoteAll = Process.GetProcesses();
+foreach(Process p in remoteAll)
+{
+          if (p.ToString().Contains("Volume_Hold_Log_WindowsApplication"))
+          {
+                    p.Kill();
+           }
+}
+return path;
+}
+
+catch (Exception e)
+{
+ Console.WriteLine("The process failed: {0}", e.ToString());
+ return null;
+}
+
+============================================================================================================
+
+Compress Image
+==============
+
+ 	private void Form1_Load(object sender, EventArgs e)
+        {
+            Image myImage = Image.FromFile(@"D:\event-4.PNG", true);
+            SaveJpeg(@"D:\event-4_compressed.PNG", myImage, 10);
+            Console.ReadLine();
+        }
+
+        public static void SaveJpeg(string path, Image img, int quality)
+        {
+            if (quality < 0 || quality > 100)
+                throw new ArgumentOutOfRangeException("quality must be between 0 and 100.");
+
+            // Encoder parameter for image quality 
+            EncoderParameter qualityParam = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+            // JPEG image codec 
+            ImageCodecInfo jpegCodec = GetEncoderInfo("image/jpeg");
+            EncoderParameters encoderParams = new EncoderParameters(1);
+            encoderParams.Param[0] = qualityParam;
+            img.Save(path, jpegCodec, encoderParams);
+        }
+
+        private static ImageCodecInfo GetEncoderInfo(string mimeType)
+        {
+        // Get image codecs for all image formats 
+        ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+
+        // Find the correct image codec 
+        for (int i = 0; i < codecs.Length; i++)
+            if (codecs[i].MimeType == mimeType)
+                return codecs[i];
+              return null;
+        }
+
+============================================================================================================
+
